@@ -1,0 +1,2 @@
+myftpclient/src/main/java/rs/MyFTPClient.java:.*password,.*;//password$,^.*//password$
+*.{java}:.*password,*;//password$
