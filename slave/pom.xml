@@ -47,7 +47,7 @@
             <configuration>
                 <archive>
                     <manifest>
-                        <mainClass>rs.slave</mainClass>
+                        <mainClass>rs.Slave</mainClass>
                     </manifest>
                 </archive>
                 <descriptorRefs>

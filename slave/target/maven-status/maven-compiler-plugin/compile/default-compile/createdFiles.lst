@@ -1,1 +1,3 @@
-rs/MyFTPServer.class
+rs/Slave.class
+rs/SlaveFTP.class
+rs/SlaveMasterSocket.class

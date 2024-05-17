@@ -1,2 +1,3 @@
-rs/MasterListenerThread.class
+rs/MasterSocket.class
 rs/Master.class
+rs/MasterFTP.class

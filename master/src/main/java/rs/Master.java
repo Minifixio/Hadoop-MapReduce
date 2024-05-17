@@ -1,23 +1,13 @@
 package rs;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,9 +23,17 @@ public class Master {
 
     private static int slavesCount;
     private static ArrayList<String> slavesHostnames = new ArrayList<String>();
-    private static ArrayList<MasterListenerThread> slavesListenerThreads = new ArrayList<MasterListenerThread>();
-    private static ArrayList<Boolean> slavesShuffleStatus = new ArrayList<Boolean>();
-    private static ArrayList<Boolean> slavesReduceStatus = new ArrayList<Boolean>();
+
+    private static ArrayList<CommunicationHandler> communicationHandlers;
+
+    private static ArrayList<Boolean> slavesMapStatus = new ArrayList<Boolean>();
+
+    private static ArrayList<Boolean> slavesShuffle1Status = new ArrayList<Boolean>();
+    private static ArrayList<Boolean> slavesReduce1Status = new ArrayList<Boolean>();
+
+    private static ArrayList<Boolean> slavesShuffle2Status = new ArrayList<Boolean>();
+    private static ArrayList<Boolean> slavesReduce2Status = new ArrayList<Boolean>();
+
     private static HashMap<String, Integer> output = new HashMap<String, Integer>();
 
     public static void main(String[] args) {
@@ -48,10 +46,20 @@ public class Master {
         String slavesHostnamesFileName = args[0];
         retreiveSlavesHostnames(slavesHostnamesFileName);
 
-        String sourceFilePath = args[1];
-        splitToFiles(sourceFilePath, slavesCount);
+        int slaveID = 0;
+        communicationHandlers = new ArrayList<CommunicationHandler>();
+        for (String slaveHostname : slavesHostnames) {
+            communicationHandlers.add(new CommunicationHandler(slaveHostname, slaveID));
+            slavesMapStatus.add(false);
+            slavesShuffle1Status.add(false);
+            slavesReduce1Status.add(false);
+            slavesShuffle2Status.add(false);
+            slavesReduce2Status.add(false);
+            slaveID++;
+        }
 
-        sendSplits(slavesHostnames);
+        String sourceFilePath = args[1];
+        splitAndSendChunks(sourceFilePath, slavesCount);
     }
 
     /**
@@ -69,27 +77,28 @@ public class Master {
             while ((line = br.readLine()) != null) {
                 slavesCount += 1;
                 slavesHostnames.add(line.trim());
-                System.out.println("Added slave!  (hostname : " + line.trim() + ")");
+                System.out.println("[Retreive Hostnames] Added slave!  (hostname : " + line.trim() + ")");
             }
         } catch (IOException e) {
-            System.err.println("Erreur lors de la lecture du fichier : " + file.getAbsolutePath() + " (" + e.getMessage() + ")");
+            System.err.println("[Retreive Hostnames] Erreur lors de la lecture du fichier : " + file.getAbsolutePath() + " (" + e.getMessage() + ")");
         }
     }
 
     /**
      * Split the file into multiple parts
+     * and send each chunk to a slave
      * @param filePath
      * @param splitsFolderPath
      * @param numberOfSlaves
      */
-    public static void splitToFiles(String sourceFilePath, int numberOfSlaves) {
-        System.out.println("Splitting file into " + numberOfSlaves + " parts...");
+    public static void splitAndSendChunks(String sourceFilePath, int numberOfSlaves) {
+        System.out.println("[Split&Send] Splitting file into " + numberOfSlaves + " parts...");
         
         // Create a folder named SPLIT_FOLDER_NAME at workind_dir/SPLIT_FOLDER_NAME if it doesn't exist
         String userDir = System.getProperty("user.dir");
         File splitsFolder = new File(userDir, SPLIT_FOLDER_NAME);
         if (!splitsFolder.exists()) {
-            System.out.println("Creating folder : " + splitsFolder.getAbsolutePath());
+            System.out.println("[Split&Send] Creating folder : " + splitsFolder.getAbsolutePath());
             splitsFolder.mkdir();
         }
 
@@ -99,12 +108,11 @@ public class Master {
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFilePath))) {
             long fileSize = new File(sourceFilePath).length();
             long chunkSize = fileSize / numberOfSlaves; // taille de chaque morceau
-            System.out.println("Chunk size : " + chunkSize);
             
             int defaultMaxBufferSize = 8192;
 
             for (int i = 0; i < numberOfSlaves; i++) {
-                System.out.println("\n\nSplitting file " + i + "...");
+                System.out.println("\n\n[Split&Send] Splitting file " + i + "...");
                 String splitFilePath = splitsFolder.getAbsolutePath() + "/split_" + i + ".txt";
                 int bytesRead = 0;
                 int currentBytesRead = 0;
@@ -156,19 +164,62 @@ public class Master {
                     }
                 }
 
+                // Send the split file to the slave
+                // TODO: make sure Threads are working well
+                final int index = i;
+                new Thread(() -> {
+                    communicationHandlers.get(index).sendFileFTP(splitFilePath, "split_" + index + ".txt");
+                }).start();
             }
         } catch (IOException e) {
-            System.err.println("Erreur lors de la lecture ou de l'écriture de fichier : " + e.getMessage());
+            System.err.println("[Split&Send] Erreur lors de la lecture ou de l'écriture de fichier : " + e.getMessage());
+        }
+        
+    }
+
+    /**
+     * Send the order to start the map phase to all slaves
+     */
+    public static void sendMapOrder() {
+        for (int i = 0; i < slavesCount; i++) {
+            final int index = i;
+            new Thread(() -> {
+                communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_MAP);
+            }).start();
         }
     }
 
     /**
-     * Send the splits to the slaves
-     * @param splitsFolderPath
-     * @param slavesHostnames
+     * Send the order to start the shuffle1 phase to all slaves
      */
-    public static void sendSplits(ArrayList<String> slavesHostnames) {
+    public static void sendShuffle1Order() {
+        for (int i = 0; i < slavesCount; i++) {
+            final int index = i;
+            new Thread(() -> {
+                communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_SHUFFLE1);
+            }).start();
+        }
+    }
 
+    /**
+     * Send the order to start the reduce1 phase to all slaves
+     */
+    public static void sendReduce1Order() {
+        for (int i = 0; i < slavesCount; i++) {
+            final int index = i;
+            new Thread(() -> {
+                communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_REDUCE1);
+            }).start();
+        }
+    }
+
+    /**
+    * Update the status of the map for a slave
+    * @param slaveID
+    * @param status
+    */
+    public static void updateMapStatus(int slaveID, boolean status) {
+        slavesMapStatus.set(slaveID, status);
     }
 
     /**
@@ -176,7 +227,35 @@ public class Master {
      * @param slaveID
      * @param status
      */
-    public static void updateShuffleStatus(String slaveID, boolean status) {
+    public static void updateShuffle1Status(int slaveID, boolean status) {
+        slavesShuffle1Status.set(slaveID, status);
+    }
 
+    /**
+     * Update the status of the reduce for a slave
+     * @param slaveID
+     * @param status
+     */
+    public static void updateReduce1Status(int slaveID, boolean status) {
+        slavesReduce1Status.set(slaveID, status);
+    }
+
+    /**
+     * Update the status of the shuffle for a slave
+     * @param slaveID
+     * @param status
+     */
+    public static void updateShuffle2Status(int slaveID, boolean status) {
+        slavesShuffle2Status.set(slaveID, status);
+    }
+
+    /**
+     * Update the status of the reduce for a slave
+     * @param slaveID
+     * @param status
+     */
+
+    public static void updateReduce2Status(int slaveID, boolean status) {
+        slavesReduce2Status.set(slaveID, status);
     }
 }
