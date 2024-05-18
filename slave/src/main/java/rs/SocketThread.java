@@ -2,16 +2,18 @@ package rs;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class SocketThread extends Thread {
 
     private BufferedReader is;
-    private BufferedWriter os;
+    private PrintWriter os;
 
     private volatile boolean running = true;
 
-    public SocketThread(BufferedReader is, BufferedWriter os) {
+    public SocketThread(BufferedReader is, PrintWriter os) {
         this.is = is;
         this.os = os;
     }
@@ -27,18 +29,34 @@ public class SocketThread extends Thread {
     }
 
     private void startCommunication() {
+        System.out.println("[SocketThread] Starting communication");
         while(running) {
             try {
                 String line = is.readLine();
                 if (line == null) {
                     break;
                 }
+                line = line.trim();
                 System.out.println("[SocketThread] Received: " + line);
                 
                 if (line.equals("INIT")) {
-                    int slaveID = Integer.parseInt(is.readLine());
+                    System.out.println("[SocketThread] Starting initialization");
+                    
                     int slaveCount = Integer.parseInt(is.readLine());
-                    Slave.updateSlaveCount(slaveID, slaveCount);
+                    Slave.setSlaveCount(slaveCount);
+
+                    int slaveID = Integer.parseInt(is.readLine());
+                    Slave.setSlaveID(slaveID);
+
+                    System.out.println("[SocketThread] Received slave count: " + slaveCount + " and id: " + slaveID);
+
+                    ArrayList<String> slavesHostnames = new ArrayList<String>();
+                    for (int i=0; i<slaveCount; i++) {
+                        slavesHostnames.add(is.readLine().trim());
+                    }
+
+                    Slave.setSlavesHostnames(slavesHostnames);
+                    os.println("INIT_OK");
                 } else if (line.equals("START_MAP")) {
                     Slave.map();
                 } else if (line.equals("START_SHUFFLE1")) {
@@ -50,9 +68,7 @@ public class SocketThread extends Thread {
                 } else if (line.equals("START_REDUCE2")) {
                     Slave.reduce2();
                 } else if (line.equals("QUIT")) {
-                    os.write("OK");
-                    os.newLine();
-                    os.flush();
+                    os.println("OK");
                     break;
                 }
             } catch (Exception e) {

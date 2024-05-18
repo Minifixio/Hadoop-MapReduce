@@ -1,6 +1,7 @@
 package rs;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,6 +13,7 @@ public class Slave {
     private static CommunicationHandler communicationManager;
     private static int slaveID;
     private static int slaveCount;
+    private static ArrayList<String> slavesHostnames;
     private static ArrayList<String> mapResult = new ArrayList<String>();
     private static HashMap<String, Integer> reduceResult = new HashMap<String, Integer>();
 
@@ -19,10 +21,16 @@ public class Slave {
         communicationManager = new CommunicationHandler();
     }
 
-    public static void updateSlaveCount(int id, int count) {
-        System.out.println("[Slave] Received slave count: " + count + " and id: " + id);
+    public static void setSlaveID(int id) {
         slaveID = id;
-        slaveCount = count;
+    }
+
+    public static void setSlaveCount(int numberOfSlaves) {
+        slaveCount = numberOfSlaves;
+    }
+
+    public static void setSlavesHostnames(ArrayList<String> hostnames) {
+        slavesHostnames = hostnames;
     }
 
     /**
@@ -30,8 +38,8 @@ public class Slave {
      * Fill the mapResult ArrayList with the words of the file (split at each space).
      */
     public static void map() {
-        String chunkFilePath = communicationManager.getFTPDirectory() + "/chunk" + slaveID + ".txt";
-        String mapFilePath = communicationManager.getFTPDirectory() + "/map" + slaveID + ".txt";
+        String chunkFilePath = communicationManager.getFTPDirectory() + "/split_" + slaveID + ".txt";
+        String mapFilePath = communicationManager.getFTPDirectory() + "/map_" + slaveID + ".txt";
 
         // Read the file located at chunkFilePath 
         // and write in a new txt file, in the same FTP directory, each word of the file on a new line
@@ -40,12 +48,14 @@ public class Slave {
             try (BufferedReader br = new BufferedReader(new FileReader(chunkFilePath))) {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    String[] words = line.split(" ");
+                    // removing punctuation
+                    String[] words = line.replaceAll("[\\p{P}&&[^\u0027]]", "").split(" ");
                     for (String word : words) {
                         bw.write(word + "\n");
                     }
                 }
                 System.out.println("[Slave] Map: done");
+                communicationManager.sendProtocolMessage(ProtocolMessage.MAP_DONE);
             }
         } catch (IOException e) {
             System.err.println("[Slave] Map: Error while reading the file");
@@ -53,11 +63,43 @@ public class Slave {
         }
     }
 
-    public static void chooseReducer() {
-
+    public static int chooseReducer(String word, int numberOfSlaves) {
+        int hash = word.hashCode();
+        int reducer = hash % numberOfSlaves;
+        return reducer;
     }
 
     public static void shuffle1() {
+        // read all the words in the map_0.txt file
+        // for each word, get the reducer ID with chooseReducer
+        // if a shuffle1/shuffle1_{reducerID}.txt file exists, append the word to it
+        // else create shuffle1/shuffle1_{reducerID}.txt file and append the word to it
+        // at the end, send the file via FTP to the hostname of id reducerID
+
+        String mapFilePath = communicationManager.getFTPDirectory() + "/map_" + slaveID + ".txt";
+        // create shuffle1 folder
+        File shuffle1Folder = new File(communicationManager.getFTPDirectory(), "shuffle1");
+        if (!shuffle1Folder.exists()) {
+            System.out.println("[Split&Send] Creating folder : " + shuffle1Folder.getAbsolutePath());
+            shuffle1Folder.mkdir();
+        }
+
+        try(BufferedReader br = new BufferedReader(new FileReader(mapFilePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String word = line.trim();
+                int reducerID = chooseReducer(word, slaveCount);
+                String shuffleFilePath = communicationManager.getFTPDirectory() + "/shuffle1/shuffle1_" + reducerID + ".txt";
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(shuffleFilePath, true))) {
+                    bw.write(word + "\n");
+                }
+            }
+            System.out.println("[Slave] Shuffle1: done");
+            communicationManager.sendProtocolMessage(ProtocolMessage.SHUFFLE1_DONE);
+        } catch (IOException e) {
+            System.err.println("[Slave] Shuffle1: Error while reading the file");
+            e.printStackTrace();
+        }
 
     }
 

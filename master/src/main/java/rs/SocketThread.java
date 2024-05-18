@@ -1,22 +1,18 @@
 package rs;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.io.PrintWriter;
 
 public class SocketThread extends Thread {
 
-    private BufferedWriter os = null;
+    private PrintWriter os = null;
     private BufferedReader is = null;
     private volatile int slaveID;
 
     private boolean running = true;
 
-    public SocketThread(BufferedReader is, BufferedWriter os, int slaveID) {
+    public SocketThread(BufferedReader is, PrintWriter os, int slaveID) {
         this.is = is;
         this.os = os;
         this.slaveID = slaveID;
@@ -33,12 +29,14 @@ public class SocketThread extends Thread {
     }
 
     private void startCommunication() {
+        System.out.println("[SocketThread] Starting communication");
         while(running) {
             try {
                 String line = is.readLine();
                 if (line == null) {
                     break;
                 }
+                line = line.trim();
                 System.out.println("[SocketThread] Received: " + line);
     
                 if (line.equals("MAP_DONE")) {
@@ -66,13 +64,7 @@ public class SocketThread extends Thread {
     }
 
     public void write(String message) {
-        try {
-            os.write(message);
-            os.newLine(); // End of line
-            os.flush();  
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        os.println(message);
     }
     
 }

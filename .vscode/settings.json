@@ -1,3 +1,4 @@
 {
-    "censitive.enable": true
+    "censitive.enable": true,
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

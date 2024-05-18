@@ -3,12 +3,16 @@ package rs;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -27,15 +31,17 @@ public class CommunicationHandler {
     private Socket socket = null;
     private SocketThread socketThread = null;
     
-    private BufferedWriter os = null;
-    private BufferedReader is = null;
+    private PrintWriter osSocket = null;
+    private BufferedReader isSocket = null;
 
     private int slaveID;
+    private int slavesCount;
 
-    public CommunicationHandler(String hostname, int slaveID) {
+    public CommunicationHandler(String hostname, int slaveID, int slavesCount) {
         this.slaveID = slaveID;
-        connectFTP(hostname);
+        this.slavesCount = slavesCount;
         connectSocket(hostname);
+        connectFTP(hostname);
         System.out.println("[CommunicationHandler] Connected to " + hostname);
     }
 
@@ -43,9 +49,23 @@ public class CommunicationHandler {
        try {
             socket = new Socket(hostname, SOCKET_PORT);
             System.out.println("[Socket] Connected to " + hostname + " on port " + SOCKET_PORT);
-            os = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            socketThread = new SocketThread(is, os, slaveID).start();
+            osSocket = new PrintWriter(socket.getOutputStream(), true);
+            isSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            // Sending the INIT message to the slave
+            System.out.println("[Socket] Sending INIT message to the slave");
+            osSocket.println("INIT");
+            osSocket.println(slavesCount);
+            osSocket.println(slaveID);
+            ArrayList<String> hostnames = Master.getSlavesHostnames();
+
+            for (int i=0; i<slavesCount; i++) {
+                osSocket.println(hostnames.get(i));
+            }
+
+            socketThread = new SocketThread(isSocket, osSocket, slaveID);
+            socketThread.start();
+
        } catch (UnknownHostException e) {
             System.err.println("[Socket] Don't know about host " + hostname);
             return;
@@ -57,9 +77,9 @@ public class CommunicationHandler {
 
     public void disconnectSocket() {
         try {
-            socketThread.close();
-            os.close();
-            is.close();
+            socketThread.terminate();
+            osSocket.close();
+            isSocket.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -138,11 +158,6 @@ public class CommunicationHandler {
     }
 
     public void sendProtocolMessage(ProtocolMessage message) {
-        try {
-            os.write(message.toString());
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        osSocket.println(message.toString());
     }
 }

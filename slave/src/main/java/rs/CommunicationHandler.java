@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ import org.apache.ftpserver.usermanager.impl.WritePermission;
 import org.apache.log4j.PropertyConfigurator;
 
 public class CommunicationHandler {
+
+    private static boolean DEBUG = true;
     
     /**
      * Socket variables
@@ -31,7 +34,10 @@ public class CommunicationHandler {
     private final int SOCKET_PORT = 9999; // We can't choose a port less than 1023 if we are not privileged users (root)
 
     private ServerSocket serverSocket = null;
+    private SocketThread socketThread = null;
     private Socket masterSocket = null;
+    private PrintWriter osSocket = null;
+    private BufferedReader isSocket = null;
 
 
     /**
@@ -83,7 +89,11 @@ public class CommunicationHandler {
         user.setPassword(FTP_PASSWORD); 
         String username = user.getName();
         
-        FTPDirectory = System.getProperty("java.io.tmpdir") + "/"+ FTP_USERNAME +"/" + username;
+        if (DEBUG) {
+            FTPDirectory = System.getProperty("user.dir");
+        } else {
+            FTPDirectory = System.getProperty("java.io.tmpdir") + "/"+ FTP_USERNAME +"/" + username;
+        }
 
         File directory = new File(FTPDirectory); // Convert the string to a File object
         if (!directory.exists()) { // Check if the directory exists
@@ -120,6 +130,22 @@ public class CommunicationHandler {
         }
     }
 
+    public void sendFTPFile(String hostname) {
+
+        FTPClient FTPClient = new FTPClient();
+
+        try {
+            FTPClient.connect(hostname, FTP_PORT);
+            FTPClient.login(FTP_USERNAME, FTP_PASSWORD);
+            FTPClient.enterLocalPassiveMode();
+            FTPClient.setFileType(FTP.BINARY_FILE_TYPE);
+            System.out.println("[FTP] Connected to " + hostname + " on port " + FTP_PORT);
+        } catch (Exception e) {
+            System.err.println("[FTP] Error connecting to " + hostname + " on port " + FTP_PORT);
+            e.printStackTrace();
+        }
+    }
+
     public void listFTPFiles() {
         System.out.println("[FTP] Listing files in in the directory: " + FTPDirectory);
         File directory = new File(FTPDirectory);
@@ -152,15 +178,31 @@ public class CommunicationHandler {
             System.out.println("[Socket] Master reached the server.");
 
             // Open input and output streams
-            BufferedReader is = new BufferedReader(new InputStreamReader(masterSocket.getInputStream()));
-            BufferedWriter os = new BufferedWriter(new OutputStreamWriter(masterSocket.getOutputStream()));
+            osSocket = new PrintWriter(masterSocket.getOutputStream(), true);
+            isSocket = new BufferedReader(new InputStreamReader(masterSocket.getInputStream()));
 
             // Start thread of SocketThread to parse commands
-            new SocketThread(is, os).start();
+            socketThread = new SocketThread(isSocket, osSocket);
+            socketThread.start();
 
        } catch (IOException e) {
             System.out.println(e);
             e.printStackTrace();
        }
+    }
+
+    public void sendProtocolMessage(ProtocolMessage message) {
+        osSocket.println(message.toString());
+    }
+
+    public void disconnectSocket() {
+        try {
+            socketThread.terminate();
+            osSocket.close();
+            isSocket.close();
+            masterSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

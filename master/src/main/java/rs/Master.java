@@ -45,11 +45,21 @@ public class Master {
 
         String slavesHostnamesFileName = args[0];
         retreiveSlavesHostnames(slavesHostnamesFileName);
+        initCommunications(slavesCount);
 
+        String sourceFilePath = args[1];
+        splitAndSendChunks(sourceFilePath, slavesCount);
+    }
+
+    public static ArrayList<String> getSlavesHostnames() {
+        return slavesHostnames;
+    }
+
+    private static void initCommunications(int numberOfSlaves) {
         int slaveID = 0;
         communicationHandlers = new ArrayList<CommunicationHandler>();
         for (String slaveHostname : slavesHostnames) {
-            communicationHandlers.add(new CommunicationHandler(slaveHostname, slaveID));
+            communicationHandlers.add(new CommunicationHandler(slaveHostname, slaveID, numberOfSlaves));
             slavesMapStatus.add(false);
             slavesShuffle1Status.add(false);
             slavesReduce1Status.add(false);
@@ -57,9 +67,6 @@ public class Master {
             slavesReduce2Status.add(false);
             slaveID++;
         }
-
-        String sourceFilePath = args[1];
-        splitAndSendChunks(sourceFilePath, slavesCount);
     }
 
     /**
@@ -169,6 +176,7 @@ public class Master {
                 final int index = i;
                 new Thread(() -> {
                     communicationHandlers.get(index).sendFileFTP(splitFilePath, "split_" + index + ".txt");
+                    communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_MAP);
                 }).start();
             }
         } catch (IOException e) {
@@ -220,6 +228,9 @@ public class Master {
     */
     public static void updateMapStatus(int slaveID, boolean status) {
         slavesMapStatus.set(slaveID, status);
+        if (slavesMapStatus.stream().allMatch(s -> s)) {
+            sendShuffle1Order();
+        }
     }
 
     /**
