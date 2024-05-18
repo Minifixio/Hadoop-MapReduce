@@ -3,6 +3,7 @@ package rs;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -12,6 +13,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
@@ -130,7 +133,7 @@ public class CommunicationHandler {
         }
     }
 
-    public void sendFTPFile(String hostname) {
+    public void sendFTPFile(String hostname, String sentFileName, String filePath) {
 
         FTPClient FTPClient = new FTPClient();
 
@@ -140,6 +143,17 @@ public class CommunicationHandler {
             FTPClient.enterLocalPassiveMode();
             FTPClient.setFileType(FTP.BINARY_FILE_TYPE);
             System.out.println("[FTP] Connected to " + hostname + " on port " + FTP_PORT);
+
+            System.out.println("[FTP] Uploading file: " + filePath);
+            try (FileInputStream inputStream = new FileInputStream(filePath)) {
+                FTPClient.storeFile(sentFileName, inputStream);
+                System.out.println("[FTP] File uploaded successfully.");
+            } catch (IOException e) {
+                System.err.println("[FTP] Error uploading file: " + e.getMessage());
+            }
+            
+            FTPClient.logout();
+            FTPClient.disconnect();
         } catch (Exception e) {
             System.err.println("[FTP] Error connecting to " + hostname + " on port " + FTP_PORT);
             e.printStackTrace();

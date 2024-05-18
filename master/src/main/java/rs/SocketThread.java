@@ -41,6 +41,8 @@ public class SocketThread extends Thread {
     
                 if (line.equals("MAP_DONE")) {
                     Master.updateMapStatus(slaveID, true);
+                } else if (line.equals("SHUFFLE1_DONE")) {
+                    Master.updateShuffle1Status(slaveID, true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

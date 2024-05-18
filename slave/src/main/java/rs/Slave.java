@@ -82,6 +82,14 @@ public class Slave {
         if (!shuffle1Folder.exists()) {
             System.out.println("[Split&Send] Creating folder : " + shuffle1Folder.getAbsolutePath());
             shuffle1Folder.mkdir();
+        } else {
+            // make sure to delete all previous shuffle1 files to avoid to append above previous tests
+            File[] allContents = shuffle1Folder.listFiles();
+            if (allContents != null) {
+                for (File file : allContents) {
+                    file.delete();
+                }
+            }
         }
 
         try(BufferedReader br = new BufferedReader(new FileReader(mapFilePath))) {
@@ -94,7 +102,13 @@ public class Slave {
                     bw.write(word + "\n");
                 }
             }
-            System.out.println("[Slave] Shuffle1: done");
+            System.out.println("[Slave] Shuffle1: created shuffle1 files");
+
+            for (int i = 0; i < slaveCount; i++) {
+                String shuffleFilePath = communicationManager.getFTPDirectory() + "/shuffle1/shuffle1_" + i + ".txt";
+                String sentFileName = "shuffle1_result_" + i + ".txt";
+                communicationManager.sendFTPFile(slavesHostnames.get(i), sentFileName, shuffleFilePath);
+            }
             communicationManager.sendProtocolMessage(ProtocolMessage.SHUFFLE1_DONE);
         } catch (IOException e) {
             System.err.println("[Slave] Shuffle1: Error while reading the file");

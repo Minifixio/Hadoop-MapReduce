@@ -240,6 +240,9 @@ public class Master {
      */
     public static void updateShuffle1Status(int slaveID, boolean status) {
         slavesShuffle1Status.set(slaveID, status);
+        if (slavesShuffle1Status.stream().allMatch(s -> s)) {
+            sendReduce1Order();
+        }
     }
 
     /**
