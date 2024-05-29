@@ -1,4 +1,5 @@
 rs/CommunicationHandler.class
+rs/MapReduceState.class
 rs/SocketThread.class
 rs/ProtocolMessage.class
 rs/Master.class

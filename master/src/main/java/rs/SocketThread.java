@@ -2,17 +2,20 @@ package rs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
 
 public class SocketThread extends Thread {
 
-    private PrintWriter os = null;
-    private BufferedReader is = null;
+    private ObjectInputStream is;
+    private ObjectOutputStream os;
     private volatile int slaveID;
 
     private boolean running = true;
 
-    public SocketThread(BufferedReader is, PrintWriter os, int slaveID) {
+    public SocketThread(ObjectInputStream is, ObjectOutputStream os, int slaveID) {
         this.is = is;
         this.os = os;
         this.slaveID = slaveID;
@@ -32,7 +35,7 @@ public class SocketThread extends Thread {
         System.out.println("[SocketThread] Starting communication");
         while(running) {
             try {
-                String line = is.readLine();
+                String line = is.readUTF();
                 if (line == null) {
                     break;
                 }
@@ -43,30 +46,26 @@ public class SocketThread extends Thread {
                     Master.updateMapStatus(slaveID, true);
                 } else if (line.equals("SHUFFLE1_DONE")) {
                     Master.updateShuffle1Status(slaveID, true);
+                } else if (line.equals("REDUCE1_DONE")) {
+                    Integer reduce1Min = is.readInt();
+                    Integer reduce1Max = is.readInt();
+                    Master.updateReduce1Status(slaveID, true, reduce1Min, reduce1Max);
+                } else if (line.equals("SHUFFLE2_DONE")) {
+                    Master.updateShuffle2Status(slaveID, true);
+                } else if (line.equals("REDUCE2_DONE")) {
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                // TODO: handle exception
             }
         }
-    }
-
-    public void read() {
-        String responseLine;
-        try {
-            while ((responseLine = is.readLine()) != null) {
-                System.out.println("Server: " + responseLine);
-                if (responseLine.indexOf("OK") != -1) {
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
     }
 
     public void write(String message) {
-        os.println(message);
+        try {
+            os.writeUTF(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
 }

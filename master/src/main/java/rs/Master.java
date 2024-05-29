@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * TODO : 
@@ -24,13 +25,18 @@ public class Master {
     private static int slavesCount;
     private static ArrayList<String> slavesHostnames = new ArrayList<String>();
 
+    private static MapReduceState state = MapReduceState.STARTING;
+
     private static ArrayList<CommunicationHandler> communicationHandlers;
 
     private static ArrayList<Boolean> slavesMapStatus = new ArrayList<Boolean>();
 
     private static ArrayList<Boolean> slavesShuffle1Status = new ArrayList<Boolean>();
     private static ArrayList<Boolean> slavesReduce1Status = new ArrayList<Boolean>();
+    private static Integer reduce1Min = null;
+    private static Integer reduce1Max = null;
 
+    private static ArrayList<Integer> shuffle2Groups = new ArrayList<Integer>();
     private static ArrayList<Boolean> slavesShuffle2Status = new ArrayList<Boolean>();
     private static ArrayList<Boolean> slavesReduce2Status = new ArrayList<Boolean>();
 
@@ -172,7 +178,8 @@ public class Master {
                 }
 
                 // Send the split file to the slave
-                // TODO: make sure Threads are working well
+                System.out.println("[Master] Sending order to start map phase to all slaves...");
+                state = MapReduceState.MAP;
                 final int index = i;
                 new Thread(() -> {
                     communicationHandlers.get(index).sendFileFTP(splitFilePath, "split_" + index + ".txt");
@@ -186,21 +193,17 @@ public class Master {
     }
 
     /**
-     * Send the order to start the map phase to all slaves
-     */
-    public static void sendMapOrder() {
-        for (int i = 0; i < slavesCount; i++) {
-            final int index = i;
-            new Thread(() -> {
-                communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_MAP);
-            }).start();
-        }
-    }
-
-    /**
      * Send the order to start the shuffle1 phase to all slaves
      */
     public static void sendShuffle1Order() {
+        if (state != MapReduceState.MAP) {
+            System.err.println("[Master] Error: Can't start shuffle1 phase, the current state is " + state);
+            return;
+        } else {
+            System.out.println("[Master] Sending order to start shuffle1 phase to all slaves...");
+            state = MapReduceState.SHUFFLE1;
+        }
+
         for (int i = 0; i < slavesCount; i++) {
             final int index = i;
             new Thread(() -> {
@@ -213,6 +216,14 @@ public class Master {
      * Send the order to start the reduce1 phase to all slaves
      */
     public static void sendReduce1Order() {
+        if (state != MapReduceState.SHUFFLE1) {
+            System.err.println("[Master] Error: Can't start shuffle1 phase, the current state is " + state);
+            return;
+        } else {
+            System.out.println("[Master] Sending order to start shuffle1 phase to all slaves...");
+            state = MapReduceState.REDUCE1;
+        }
+
         for (int i = 0; i < slavesCount; i++) {
             final int index = i;
             new Thread(() -> {
@@ -227,8 +238,9 @@ public class Master {
     * @param status
     */
     public static void updateMapStatus(int slaveID, boolean status) {
+        System.out.println("[Master] Map: Slave " + slaveID + " has finished the map phase");
         slavesMapStatus.set(slaveID, status);
-        if (slavesMapStatus.stream().allMatch(s -> s)) {
+        if (slavesMapStatus.stream().allMatch(s -> s) && state == MapReduceState.MAP) {
             sendShuffle1Order();
         }
     }
@@ -239,8 +251,9 @@ public class Master {
      * @param status
      */
     public static void updateShuffle1Status(int slaveID, boolean status) {
+        System.out.println("[Master] Shuffle1: Slave " + slaveID + " has finished the shuffle phase");
         slavesShuffle1Status.set(slaveID, status);
-        if (slavesShuffle1Status.stream().allMatch(s -> s)) {
+        if (slavesShuffle1Status.stream().allMatch(s -> s) && state == MapReduceState.SHUFFLE1) {
             sendReduce1Order();
         }
     }
@@ -249,9 +262,61 @@ public class Master {
      * Update the status of the reduce for a slave
      * @param slaveID
      * @param status
+     * @param output
      */
-    public static void updateReduce1Status(int slaveID, boolean status) {
+    public static void updateReduce1Status(int slaveID, boolean status, Integer min, Integer max) {
+        System.out.println("[Master] Reduce1: Slave " + slaveID + " has finished the reduce phase");
+        
         slavesReduce1Status.set(slaveID, status);
+
+        if (reduce1Min == null || min < reduce1Min) {
+            reduce1Min = min;
+        }
+
+        if (reduce1Max == null || max > reduce1Max) {
+            reduce1Max = max;
+        }
+
+        if (slavesReduce1Status.stream().allMatch(s -> s) && state == MapReduceState.REDUCE1) {
+            System.out.println("[Master] Reduce1: All slaves have finished the reduce phase");
+            System.out.println("[Master] Reduce1: Min = " + reduce1Min + " | Max = " + reduce1Max);
+            sendShuffle2Order();
+        }
+    }
+
+    public static void makeShuffle2Groups() {
+        System.out.println("[Master] Reduce1: Making groups for shuffle2 phase...");
+        int groupSize = (reduce1Max - reduce1Min) / slavesCount;
+        int currentMin = reduce1Min;
+        int currentMax = reduce1Min + groupSize;
+        for (int i = 0; i < slavesCount; i++) {
+            int max = currentMax;
+            shuffle2Groups.add(max);
+            currentMin = currentMax + 1;
+            currentMax = currentMin + groupSize;
+        }
+        System.out.println("[Master] Reduce1: Groups for shuffle2 phase : " + shuffle2Groups);
+    }
+
+    public static void sendShuffle2Order() {
+        if (state != MapReduceState.REDUCE1) {
+            System.err.println("[Master] Error: Can't start shuffle2 phase, the current state is " + state);
+            return;
+        } else {
+            System.out.println("[Master] Sending order to start shuffle2 phase to all slaves...");
+            state = MapReduceState.SHUFFLE2;
+        }
+
+        makeShuffle2Groups();
+
+        for (int i = 0; i < slavesCount; i++) {
+            final int index = i;
+            new Thread(() -> {
+                communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_SHUFFLE2);
+                communicationHandlers.get(index).sendObject(shuffle2Groups);
+            }).start();
+        }
+
     }
 
     /**
@@ -261,6 +326,26 @@ public class Master {
      */
     public static void updateShuffle2Status(int slaveID, boolean status) {
         slavesShuffle2Status.set(slaveID, status);
+        if (slavesShuffle2Status.stream().allMatch(s -> s) && state == MapReduceState.SHUFFLE2) {
+            sendReduce2Order();
+        }
+    }
+
+    public static void sendReduce2Order() {
+        if (state != MapReduceState.SHUFFLE2) {
+            System.err.println("[Master] Error: Can't start reduce2 phase, the current state is " + state);
+            return;
+        } else {
+            System.out.println("[Master] Sending order to start reduce2 phase to all slaves...");
+            state = MapReduceState.REDUCE2;
+        }
+
+        for (int i = 0; i < slavesCount; i++) {
+            final int index = i;
+            new Thread(() -> {
+                communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_REDUCE2);
+            }).start();
+        }
     }
 
     /**

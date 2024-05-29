@@ -6,8 +6,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 public class CommunicationHandler {
 
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
     
     /**
      * Socket variables
@@ -39,8 +42,8 @@ public class CommunicationHandler {
     private ServerSocket serverSocket = null;
     private SocketThread socketThread = null;
     private Socket masterSocket = null;
-    private PrintWriter osSocket = null;
-    private BufferedReader isSocket = null;
+    private ObjectOutputStream osSocket = null;
+    private ObjectInputStream isSocket = null;
 
 
     /**
@@ -108,6 +111,16 @@ public class CommunicationHandler {
         }
         user.setHomeDirectory(FTPDirectory);
 
+        // delete all the .txt files in the directory
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.getName().endsWith(".txt")) {
+                    file.delete();
+                }
+            }
+        }
+
         // Set write permissions for the user
         List<Authority> authorities = new ArrayList<>();
         authorities.add(new WritePermission());
@@ -134,6 +147,7 @@ public class CommunicationHandler {
     }
 
     public void sendFTPFile(String hostname, String sentFileName, String filePath) {
+        System.out.println("[FTP] Sending file to " + hostname + ": " + sentFileName + " from " + filePath);
 
         FTPClient FTPClient = new FTPClient();
 
@@ -147,7 +161,7 @@ public class CommunicationHandler {
             System.out.println("[FTP] Uploading file: " + filePath);
             try (FileInputStream inputStream = new FileInputStream(filePath)) {
                 FTPClient.storeFile(sentFileName, inputStream);
-                System.out.println("[FTP] File uploaded successfully.");
+                System.out.println("[FTP] File " + sentFileName + " uploaded successfully.");   
             } catch (IOException e) {
                 System.err.println("[FTP] Error uploading file: " + e.getMessage());
             }
@@ -192,8 +206,8 @@ public class CommunicationHandler {
             System.out.println("[Socket] Master reached the server.");
 
             // Open input and output streams
-            osSocket = new PrintWriter(masterSocket.getOutputStream(), true);
-            isSocket = new BufferedReader(new InputStreamReader(masterSocket.getInputStream()));
+            osSocket = new ObjectOutputStream(masterSocket.getOutputStream());
+            isSocket = new ObjectInputStream(masterSocket.getInputStream());
 
             // Start thread of SocketThread to parse commands
             socketThread = new SocketThread(isSocket, osSocket);
@@ -206,7 +220,30 @@ public class CommunicationHandler {
     }
 
     public void sendProtocolMessage(ProtocolMessage message) {
-        osSocket.println(message.toString());
+        try {
+            osSocket.writeUTF(message.toString());
+            osSocket.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendObject(Serializable object) {
+        try {
+            osSocket.writeObject(object);
+            osSocket.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendInt(int value) {
+        try {
+            osSocket.writeInt(value);
+            osSocket.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void disconnectSocket() {

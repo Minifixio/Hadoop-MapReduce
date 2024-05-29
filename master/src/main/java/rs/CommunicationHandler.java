@@ -8,6 +8,8 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -30,9 +32,8 @@ public class CommunicationHandler {
     private static final int SOCKET_PORT = 9999;
     private Socket socket = null;
     private SocketThread socketThread = null;
-    
-    private PrintWriter osSocket = null;
-    private BufferedReader isSocket = null;
+    private ObjectOutputStream osSocket = null;
+    private ObjectInputStream isSocket = null;
 
     private int slaveID;
     private int slavesCount;
@@ -49,18 +50,18 @@ public class CommunicationHandler {
        try {
             socket = new Socket(hostname, SOCKET_PORT);
             System.out.println("[Socket] Connected to " + hostname + " on port " + SOCKET_PORT);
-            osSocket = new PrintWriter(socket.getOutputStream(), true);
-            isSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            osSocket = new ObjectOutputStream(socket.getOutputStream());
+            isSocket = new ObjectInputStream(socket.getInputStream());
 
             // Sending the INIT message to the slave
             System.out.println("[Socket] Sending INIT message to the slave");
-            osSocket.println("INIT");
-            osSocket.println(slavesCount);
-            osSocket.println(slaveID);
+            osSocket.writeUTF("INIT");
+            osSocket.writeInt(slavesCount);
+            osSocket.writeInt(slaveID);
             ArrayList<String> hostnames = Master.getSlavesHostnames();
 
             for (int i=0; i<slavesCount; i++) {
-                osSocket.println(hostnames.get(i));
+                osSocket.writeUTF(hostnames.get(i));
             }
 
             socketThread = new SocketThread(isSocket, osSocket, slaveID);
@@ -158,6 +159,22 @@ public class CommunicationHandler {
     }
 
     public void sendProtocolMessage(ProtocolMessage message) {
-        osSocket.println(message.toString());
+        System.out.println("[Socket] Sending to slaveID " + slaveID + ": " + message.toString());
+        try {
+            osSocket.writeUTF(message.toString());
+            osSocket.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+    public void sendObject(Object object) {
+        try {
+            osSocket.writeObject(object);
+            osSocket.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

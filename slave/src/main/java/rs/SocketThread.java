@@ -2,18 +2,21 @@ package rs;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class SocketThread extends Thread {
 
-    private BufferedReader is;
-    private PrintWriter os;
+    private ObjectInputStream is;
+    private ObjectOutputStream os;
 
     private volatile boolean running = true;
 
-    public SocketThread(BufferedReader is, PrintWriter os) {
+    public SocketThread(ObjectInputStream is, ObjectOutputStream os) {
         this.is = is;
         this.os = os;
     }
@@ -32,7 +35,7 @@ public class SocketThread extends Thread {
         System.out.println("[SocketThread] Starting communication");
         while(running) {
             try {
-                String line = is.readLine();
+                String line = is.readUTF();
                 if (line == null) {
                     break;
                 }
@@ -41,22 +44,22 @@ public class SocketThread extends Thread {
                 
                 if (line.equals("INIT")) {
                     System.out.println("[SocketThread] Starting initialization");
-                    
-                    int slaveCount = Integer.parseInt(is.readLine());
+
+                    int slaveCount = is.readInt();
                     Slave.setSlaveCount(slaveCount);
 
-                    int slaveID = Integer.parseInt(is.readLine());
+                    int slaveID = is.readInt();
                     Slave.setSlaveID(slaveID);
 
                     System.out.println("[SocketThread] Received slave count: " + slaveCount + " and id: " + slaveID);
 
                     ArrayList<String> slavesHostnames = new ArrayList<String>();
                     for (int i=0; i<slaveCount; i++) {
-                        slavesHostnames.add(is.readLine().trim());
+                        slavesHostnames.add(is.readUTF());
                     }
 
                     Slave.setSlavesHostnames(slavesHostnames);
-                    os.println("INIT_OK");
+                    os.writeUTF("INIT_OK");
                 } else if (line.equals("START_MAP")) {
                     Slave.map();
                 } else if (line.equals("START_SHUFFLE1")) {
@@ -64,15 +67,16 @@ public class SocketThread extends Thread {
                 } else if (line.equals("START_REDUCE1")) {
                     Slave.reduce1();
                 } else if (line.equals("START_SHUFFLE2")) {
-                    Slave.shuffle2();
+                    ArrayList<Integer> shuffle2Groups = (ArrayList<Integer>) is.readObject();
+                    Slave.shuffle2(shuffle2Groups);
                 } else if (line.equals("START_REDUCE2")) {
                     Slave.reduce2();
                 } else if (line.equals("QUIT")) {
-                    os.println("OK");
+                    os.writeUTF("OK");
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                // TODO: handle exception
             }
         }
     }

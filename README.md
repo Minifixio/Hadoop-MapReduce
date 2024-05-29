@@ -18,6 +18,15 @@ lsof -i :9999
 kill -9 <PID_du_port_3456>
 kill -9 <PID_du_port_9999>
 
+mvn clean compile assembly:single && java -jar ./target/slave-1-jar-with-dependencies.jar
+mvn clean compile assembly:single && java -jar ./target/master-1-jar-with-dependencies.jar machines.txt lorem.txt
+
+## Deploy
+scp ./target/slave-1-jar-with-dependencies.jar elegallic-22@tp-XXXX-XX.enst.fr:/tmp/elegallic-22
+ssh elegallic-22@tp-XXXX-XX.enst.fr
+cd /tmp/elegallic-22/
+java -jar slave-1-jar-with-dependencies.jar
+
 
 # Workflow
 Master send files via FTP -> Server receives the file
