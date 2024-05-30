@@ -53,6 +53,7 @@ public class SocketThread extends Thread {
                 } else if (line.equals("SHUFFLE2_DONE")) {
                     Master.updateShuffle2Status(slaveID, true);
                 } else if (line.equals("REDUCE2_DONE")) {
+                    Master.updateReduce2Status(slaveID, true);
                 }
             } catch (Exception e) {
                 // TODO: handle exception

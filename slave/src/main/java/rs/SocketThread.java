@@ -44,6 +44,7 @@ public class SocketThread extends Thread {
                 
                 if (line.equals("INIT")) {
                     System.out.println("[SocketThread] Starting initialization");
+                    Slave.reset();
 
                     int slaveCount = is.readInt();
                     Slave.setSlaveCount(slaveCount);

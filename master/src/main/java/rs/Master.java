@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -140,7 +141,6 @@ public class Master {
                     } else {
                         buffer = new byte[defaultMaxBufferSize];
                     }
-                    
 
                     currentBytesRead = bis.read(buffer);
                     bytesRead += currentBytesRead;
@@ -156,13 +156,14 @@ public class Master {
                             int bytesRestOfWord = bis.read(restOfWordBuffer);
 
                             while (bytesRestOfWord > 0 && (char) restOfWordBuffer[0] != ' ') {
-                                restOfWordBuffer = new byte[1];
-                                bytesRestOfWord = bis.read(restOfWordBuffer);
                                 if (bytesRestOfWord > 0) {
                                     bytesRead += bytesRestOfWord;
                                     buffer = Arrays.copyOf(buffer, buffer.length + 1);
                                     buffer[buffer.length - 1] = restOfWordBuffer[0];
                                 }
+
+                                restOfWordBuffer = new byte[1];
+                                bytesRestOfWord = bis.read(restOfWordBuffer);
                             }
                         }
                     }
@@ -356,5 +357,41 @@ public class Master {
 
     public static void updateReduce2Status(int slaveID, boolean status) {
         slavesReduce2Status.set(slaveID, status);
+        if (slavesReduce2Status.stream().allMatch(s -> s) && state == MapReduceState.REDUCE2) {
+            buildReduce2Result();
+        }
+    }
+
+    public static void buildReduce2Result() {
+        System.out.println("[Master] Building the final result...");
+        state = MapReduceState.FINISHED;
+
+        // Create a result file at the location of user dir
+        String userDir = System.getProperty("user.dir");
+        File resultFile = new File(userDir, "result.txt");
+
+        // clear the file if it already exists
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(resultFile))) {
+            bos.write("".getBytes());
+        } catch (IOException e) {
+            System.err.println("[Master] Error while clearing the result file : " + e.getMessage());
+        }
+
+        // retreive the reduce2_result_{slaveID}.txt file from each slave via FTP, in the right order
+        // and append the content to the result file
+        for (int i = 0; i < slavesCount; i++) {
+            InputStream is = communicationHandlers.get(i).getFileFTP("reduce2_result_" + i + ".txt");
+            try (BufferedInputStream bis = new BufferedInputStream(is);
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(resultFile, true))) {
+                byte[] buffer = new byte[8192];
+                int bytesRead = 0;
+                while ((bytesRead = bis.read(buffer)) != -1) {
+                    bos.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                System.err.println("[Master] Error while reading or writing file : " + e.getMessage());
+            }
+        }
+        System.out.println("[Master] Final result : " + output);
     }
 }

@@ -174,7 +174,7 @@ public class CommunicationHandler {
         }
     }
 
-    public void listFTPFiles() {
+    private void listFTPFiles() {
         System.out.println("[FTP] Listing files in in the directory: " + FTPDirectory);
         File directory = new File(FTPDirectory);
         File[] files = directory.listFiles();
@@ -246,12 +246,22 @@ public class CommunicationHandler {
         }
     }
 
-    public void disconnectSocket() {
+    private void disconnectSocket() {
         try {
             socketThread.terminate();
             osSocket.close();
             isSocket.close();
             masterSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void reset() {
+        try {
+            serverSocket.close();
+            disconnectSocket();
+            FTPserver.stop();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -24,6 +24,12 @@ public class Slave {
         communicationManager = new CommunicationHandler();
     }
 
+    public static void reset() {
+        state = MapReduceState.STARTING;
+        reduce1Result.clear();
+        reduce2Result.clear();        
+    }
+
     public static void setSlaveID(int id) {
         slaveID = id;
     }
@@ -62,7 +68,7 @@ public class Slave {
                     // removing punctuation
                     String[] words = line.replaceAll("[\\p{P}&&[^\u0027]]", "").split(" ");
                     for (String word : words) {
-                        bw.write(word + "\n");
+                        bw.write(word.toLowerCase() + "\n");
                     }
                 }
                 System.out.println("[Slave] Map: done");
@@ -75,7 +81,7 @@ public class Slave {
     }
 
     public static int chooseReducer(String word, int numberOfSlaves) {
-        int hash = word.hashCode();
+        int hash = Math.abs(word.hashCode());
         int reducer = hash % numberOfSlaves;
         return reducer;
     }
@@ -121,6 +127,8 @@ public class Slave {
                     try (BufferedWriter bw = new BufferedWriter(new FileWriter(shuffleFilePath, true))) {
                         bw.write(word + "\n");
                     }
+                } else {
+                    System.out.println("[Slave] word : " + word + " reducerID : " + reducerID);
                 }
             }
             System.out.println("[Slave] Shuffle1: created shuffle1 files");
@@ -136,6 +144,8 @@ public class Slave {
                         String sentFilePath = communicationManager.getFTPDirectory() + "/" + sentFileName;
                         file.renameTo(new File(sentFilePath));
                     }
+
+                // else send the file to the right slave via FTP
                 } else {
                     communicationManager.sendFTPFile(slavesHostnames.get(i), sentFileName, shuffleFilePath);
                 }
@@ -254,6 +264,8 @@ public class Slave {
                         String sentFilePath = communicationManager.getFTPDirectory() + "/" + sentFileName;
                         file.renameTo(new File(sentFilePath));
                     }
+
+                // else send the file to the right slave via FTP
                 } else {
                     communicationManager.sendFTPFile(slavesHostnames.get(i), sentFileName, shuffleFilePath);
                 }

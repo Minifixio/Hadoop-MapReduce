@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -55,7 +56,7 @@ public class CommunicationHandler {
 
             // Sending the INIT message to the slave
             System.out.println("[Socket] Sending INIT message to the slave");
-            osSocket.writeUTF("INIT");
+            osSocket.writeUTF(ProtocolMessage.INIT.toString());
             osSocket.writeInt(slavesCount);
             osSocket.writeInt(slaveID);
             ArrayList<String> hostnames = Master.getSlavesHostnames();
@@ -127,6 +128,17 @@ public class CommunicationHandler {
             System.out.println("[FTP] File uploaded successfully.");
         } catch (IOException e) {
             System.err.println("[FTP] Error uploading file: " + e.getMessage());
+        }
+    }
+
+    public InputStream getFileFTP(String fileName) {
+        try {
+            // TODO : Handle when file does not exist
+            InputStream inputStream = FTPClient.retrieveFileStream(fileName);
+            return inputStream;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
