@@ -1,0 +1,460 @@
+ - ALIVIO (RD-M4000 SGS 9-SPEED)
+ZZK - Visa veida velosipēdi un veloserviss.
+{{qty}}
+Your shopping cart is empty.
+Attēls
+Nosaukums
+Skaits
+Cena
+Dzēst
+Shopping cart
+()
+Total: {{ totalSum|number:2 }} Eur
+Place order Delivery terms
+RU LV
+{{qty}}
+Toggle navigation
+Products
+Bicycles
+BMX
+Kid's
+Women's
+Men's
+MTB
+Road
+Electric
+Foldable
+Tricycles
+Fixed
+Scooters
+Electric scooters
+Bike Trainers
+Bicycle trailers and more
+Spare parts
+Rims
+Brakes
+Forks
+Groupsets
+Tubes
+Cassettes
+Cranks
+Bottom brackets
+Chains
+Shifters
+Pedals
+Wheels
+Frames
+Tires
+Hubs
+Saddles
+Seatpost
+Handlebars
+Headsets
+Stems
+Grips and tapes
+Bar Ends
+Accessories
+Lights
+Mud guards
+Baskets and racks
+Computers
+Pumps
+Bottles and cages
+Locks
+Bags
+Phone cases
+Child seats
+Bells and horns
+Bike racks
+Accessories for kids
+Cool stuff
+Equipment
+Shoes
+Gloves
+Helmets
+Sunglasses
+Safety on road
+Apparel
+Underwear
+Hats and masks
+Jerseys and jackets
+Warmers
+Shorts and tights
+Socks and shoe covers
+Sports cosmetics
+Maintenance
+Tools
+Storage
+Lubes and cleaning
+Workshop
+Contacts
+Body Geometry
+Sale
+Kid's
+Women's
+Men's
+MTB
+Road
+ZZK JŪRMALA
++371 67810340
+ZZK RĪGA
++371 67701631
+ZZK IMANTA
++371 67428735
+ZZK VALMIERA
++371 64229661
+ZZK JŪRMALA
++371 67810340
+K.Ulmaņa gatve 201, Rīga
+ZZK RĪGA
++371 67701631
+Dzelzavas iela 47, Rīga
+ZZK IMANTA
++371 67428735
+Jūrmalas gatve 46a, Rīga
+ZZK VALMIERA
++371 64229661
+Rīgas iela 75a, Valmiera
+Pārslēdzēji un rokturi / Переключатели / Shifters and Derailleurs /
+Interest-free leasing is calculated based on the full price of the products.
+Content on this web page is for information only and may differ from the range available in store.
+Shimano Alivio sērijas aizmugurējais pārslēdzējs
+3 x 9 ātrumi
+Задний переключатель серии Shimano Alivio
+3 x 9 скоростей
+Shimano Alivio series
+3 x 9 speed
+Shimano
+Shimano
+ALIVIO (RD-M4000 SGS 9-SPEED)
+32.80 Eur 41.00 Eur (-20%)
+Add to Cart
+Delivery terms
+Additional products
+-20%
+-20%
+-10%
+-20%
+-30%
+-20%
+.
+Delivery Warranty Data processing Body Geometry Contacts Requisites
+ZZK FB ZZK YT ZZK IG
+©ZZK.LV – 2022
+
+
+WARC/1.0
+WARC-Type: conversion
+WARC-Target-URI: https://zzk.lv/lv/product/citadel-amsterdam-ca-80-20-k
+WARC-Date: 2022-01-16T11:01:15Z
+WARC-Record-ID: <urn:uuid:7cc97973-eac4-464f-8b80-f718b430fb6b>
+WARC-Refers-To: <urn:uuid:5ed11378-caf8-4451-976a-283f5eec3973>
+WARC-Block-Digest: sha1:UJGYNN5K4MKY2TK33T2AN7TWE25LG3R2
+WARC-Identified-Content-Language: lav,rus,eng
+Content-Type: text/plain
+Content-Length: 2647
+
+ZZK - Amsterdam CA 80/20/K
+ZZK - Visa veida velosipēdi un veloserviss.
+{{qty}}
+Tavs iepirkumu grozs ir tukšs.
+Attēls
+Nosaukums
+Skaits
+Cena
+Dzēst
+Iepirkumu grozs
+()
+Summa {{ totalSum|number:2 }} Eur
+Pasūtīt Piegādes noteikumi
+RU LV
+{{qty}}
+Toggle navigation
+Produkti
+Velosipēdi
+BMX
+Bērnu
+Sieviešu
+Vīriešu
+Kalnu
+Šosejas
+Elektriskie
+Saliekamie
+Trīsriteņi
+Fixed
+Skrejriteņi
+Elektriskie skrejriteņi
+Velotrenažieri
+Velopiekabes un citi
+Detaļas
+Aploki
+Bremzes
+Dakšas
+Grupas
+Kameras
+Kasetes
+Klaņi
+Pedāļu centri
+Ķēdes
+Pārslēdzēji
+Pedāļi
+Rati
+Rāmji
+Riepas
+Rumbas
+Sēdekļi
+Sēdekļu stutes
+Stūres
+Stūres bļodiņas
+Stūres iznesumi
+Rokturi un lentes
+Stūres radziņi
+Aksesuāri
+Lukturi
+Dubļu sargi
+Grozi un bagāžnieki
+Spidometri
+Pumpji
+Pudeles un stiprinājumi
+Slēdzenes
+Somas
+Telefona turētāji
+Bērnu sēdekļi
+Zvani un taures
+Pārvadāšanai
+Aksesuāri bērniem
+Foršas lietas
+Ekipējums
+Apavi
+Cimdi
+Ķiveres
+Saulesbrilles
+Drošībai uz ceļa
+Apģērbs
+Apakšveļa
+Cepures un maskas
+Krekli un jakas
+Sildītāji
+Šorti un bikses
+Zeķes un mokasīni
+Sporta kosmētika
+Apkope
+Instrumenti
+Glabāšanai
+Smērvielas un tīrītāji
+Serviss
+Kontakti
+Body Geometry
+Izpārdošana
+Bērnu
+Sieviešu
+Vīriešu
+Kalnu
+Šosejas
+ZZK JŪRMALA
++371 67810340
+ZZK RĪGA
++371 67701631
+ZZK IMANTA
++371 67428735
+ZZK VALMIERA
++371 64229661
+ZZK JŪRMALA
++371 67810340
+K.Ulmaņa gatve 201, Rīga
+ZZK RĪGA
++371 67701631
+Dzelzavas iela 47, Rīga
+ZZK IMANTA
++371 67428735
+Jūrmalas gatve 46a, Rīga
+ZZK VALMIERA
++371 64229661
+Rīgas iela 75a, Valmiera
+Slēdzenes / Замки / Locks /
+Bezprocentu līzings tiek aprēķināts no produkta pilnās summas.
+Mājas lapā izvietotais saturs ir informatīvs un var atšķirties no veikalā pieejamā klāsta!
+Īpaši izturīga trose.
+Noslēdzošais mehānisms ar atslēgu
+Gumijots pārvalks.
+Garums: 80cm
+Diametrs: Ø 20mm
+Rāmja stiprinājums.
+Тип замка: трос в оболочке ПВХ.
+Блокировки на ключ.
+Длина кабеля: 80 см
+Диаметр кабеля: Ø 20 мм
+Вкл. кронштейн.
+Strong Flex Cable.
+Lock on the key.
+Cable length: 80 cm
+Cable diameter: Ø 20 mm
+Incl. bracket
+Citadel
+Citadel
+Amsterdam CA 80/20/K
+Produkts uz doto brīdi nav pieejams.
+19.20 Eur 24.00 Eur (-20%)
+Pievienot grozam
+Piegādes noteikumi
+Citi produkti
+-20%
+-20%
+-20%
+-30%
+-10%
+-20%
+Artikuls
+Krāsa/Apraksts
+Izmērs:
+Jūrmala
+Rīga
+Imanta
+Valmiera
+381124 Black - 0 5+ 0 1
+Artikuls
+Krāsa/Apraksts
+Izmērs
+Jūrmala
+Rīga
+Imanta
+Valmiera
+381124 Black - 0 6 0 1
+.
+Piegāde Garantija Datu apstrāde Body Geometry Kontakti Rekvizīti
+ZZK FB ZZK YT ZZK IG
+©ZZK.LV – 2022
+
+
+WARC/1.0
+WARC-Type: conversion
+WARC-Target-URI: https://zzz.physics.umn.edu/groups/mu2e/06-03-2016?image=groups%3Aper%3Ageneralui.png&ns=groups%3Aper&tab_details=view&do=media&tab_files=files
+WARC-Date: 2022-01-16T09:52:25Z
+WARC-Record-ID: <urn:uuid:6043ce56-a269-4a7b-8068-1418eed5f4a4>
+WARC-Refers-To: <urn:uuid:817a12d5-2ded-405f-9756-39c666258ae3>
+WARC-Block-Digest: sha1:XMUBDJQGIK6EMM2ZGJC3ZY6LQZR2JWXW
+WARC-Identified-Content-Language: eng
+Content-Type: text/plain
+Content-Length: 1639
+
+groups:mu2e:06-03-2016 [School of Physics and Astronomy Wiki]
+Campuses:
+Twin Cities
+Crookston
+Duluth
+Morris
+Rochester
+Other Locations
+Go to the U of M home page
+College of Science and Engineering
+CSE Home
+CSE Directory
+Give to CSE
+Student Dashboard
+Search School of Physics and Astronomy Wiki
+Search
+School of Physics & Astronomy
+School of Physics and Astronomy Wiki	
+skip to content
+User Tools
+Log In
+Trace:
+groups:mu2e:06-03-2016
+Media Manager
+Namespaces
+Choose namespace
+[root]
+admin
+cache_mathplugin
+classes
+computing
+dgs_advice
+graduate_handbook
+groups
+cmbmo
+cms
+core_us
+cosmology
+fastspin
+ftpi2013
+gwestats
+heptpi
+homestake
+ipsig
+journal_club
+mmc
+mu2e
+nova
+per
+physicsforce
+reu
+soudanout
+sps
+taorientation
+veritas
+wipa
+handbook
+home
+london_prize
+people
+physlab
+playground
+student_shop
+undergraduate_handbook
+wiki
+Media Files
+Media Files
+Upload
+Search
+Files in groups:per
+Thumbnails Rows
+Name Date
+Apply
+circuit_1.jpg
+229×75
+2012/10/16 08:55
+4.9 KB
+crmff.4.gif
+98×147
+2012/10/15 17:05
+662 B
+generalui.png
+1358×668
+2013/08/07 21:57
+790.3 KB
+generaluiinstructor.png
+1358×670
+2013/08/07 21:57
+616 KB
+newproblemcoach.docx
+2013/09/09 11:17
+440.5 KB
+File
+View
+History
+groups:per:generalui.png
+Date:
+2013/08/07 21:57
+Filename:
+generalui.png
+Format:
+PNG
+Size:
+790KB
+Width:
+1358
+Height:
+668
+References for:
+Nothing was found.
+groups/mu2e/06-03-2016.txt · Last modified: 2016/06/03 13:59 by dambrose
+Page Tools
+Show page
+Old revisions
+Backlinks
+Back to top
+©2005-2013 Regents of the University of Minnesota. All rights reserved.
+The University of Minnesota is an equal opportunity educator and employer
+Contact U of M | Privacy | Sitemap
+
+

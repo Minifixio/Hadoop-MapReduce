@@ -22,6 +22,7 @@ import java.util.Set;
 public class Master {
 
     private static final String SPLIT_FOLDER_NAME = "splits";
+    private static final String RESULT_FILE_NAME = "result.txt";
 
     private static int slavesCount;
     private static ArrayList<String> slavesHostnames = new ArrayList<String>();
@@ -116,6 +117,12 @@ public class Master {
             splitsFolder.mkdir();
         }
 
+        // Remove all the existing files in the split folder
+        File[] files = splitsFolder.listFiles();
+        for (File f : files) {
+            f.delete();
+        }
+
         // Read the source file using BufferedInputStream
         // Split the file in chunks of size = file_size / numberOfSlaves (make sure to stop at a space character not to cut a word)
         // Write the chunks to a file named SPLIT_FOLDER_NAME/split_i.txt
@@ -167,11 +174,6 @@ public class Master {
                             }
                         }
                     }
-
-                    for (byte b : buffer) {
-                        System.out.print((char) b);
-                    }
-                    System.out.println();  
 
                     try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(splitFilePath))) {
                         bos.write(buffer);
@@ -368,7 +370,7 @@ public class Master {
 
         // Create a result file at the location of user dir
         String userDir = System.getProperty("user.dir");
-        File resultFile = new File(userDir, "result.txt");
+        File resultFile = new File(userDir, RESULT_FILE_NAME);
 
         // clear the file if it already exists
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(resultFile))) {
