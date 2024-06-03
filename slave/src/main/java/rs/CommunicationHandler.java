@@ -174,17 +174,6 @@ public class CommunicationHandler {
         }
     }
 
-    private void listFTPFiles() {
-        System.out.println("[FTP] Listing files in in the directory: " + FTPDirectory);
-        File directory = new File(FTPDirectory);
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                System.out.println(file.getName());
-            }
-        }
-    }
-
     public String getFTPDirectory() {
         return FTPDirectory;
     }

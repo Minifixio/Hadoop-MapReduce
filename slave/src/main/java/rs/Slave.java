@@ -22,12 +22,18 @@ public class Slave {
 
     public static void main(String[] args) {
         communicationManager = new CommunicationHandler();
+        init(); 
     }
 
-    public static void reset() {
+    public static void init() {
         state = MapReduceState.STARTING;
         reduce1Result.clear();
-        reduce2Result.clear();        
+        reduce2Result.clear();    
+    }
+
+    public static void reset() {   
+        state = MapReduceState.STARTING;
+        communicationManager.reset();   
     }
 
     public static void setSlaveID(int id) {
@@ -68,7 +74,9 @@ public class Slave {
                     // removing punctuation
                     String[] words = line.replaceAll("[\\p{P}&&[^\u0027]]", "").split(" ");
                     for (String word : words) {
-                        bw.write(word.toLowerCase() + "\n");
+                        if (!word.isEmpty() && word.length() > 1) {
+                            bw.write(word.toLowerCase() + "\n");
+                        }
                     }
                 }
                 System.out.println("[Slave] Map: done");

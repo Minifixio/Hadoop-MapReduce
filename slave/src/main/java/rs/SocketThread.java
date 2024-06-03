@@ -44,7 +44,6 @@ public class SocketThread extends Thread {
                 
                 if (line.equals("INIT")) {
                     System.out.println("[SocketThread] Starting initialization");
-                    Slave.reset();
 
                     int slaveCount = is.readInt();
                     Slave.setSlaveCount(slaveCount);
@@ -60,20 +59,39 @@ public class SocketThread extends Thread {
                     }
 
                     Slave.setSlavesHostnames(slavesHostnames);
-                    os.writeUTF("INIT_OK");
-                } else if (line.equals("START_MAP")) {
+                    os.writeUTF(ProtocolMessage.INIT_RECEIVED.toString());
+                    os.flush();
+
+                } else if (line.equals(ProtocolMessage.START_MAP.toString())) {
+                    os.writeUTF(ProtocolMessage.MAP_RECEIVED.toString());
+                    os.flush();
                     Slave.map();
-                } else if (line.equals("START_SHUFFLE1")) {
+
+                } else if (line.equals(ProtocolMessage.START_SHUFFLE1.toString())) {
+                    os.writeUTF(ProtocolMessage.SHUFFLE1_RECEIVED.toString());
+                    os.flush();
                     Slave.shuffle1();
-                } else if (line.equals("START_REDUCE1")) {
+
+                } else if (line.equals(ProtocolMessage.START_REDUCE1.toString())) {
+                    os.writeUTF(ProtocolMessage.REDUCE1_RECEIVED.toString());
+                    os.flush();
                     Slave.reduce1();
-                } else if (line.equals("START_SHUFFLE2")) {
+
+                } else if (line.equals(ProtocolMessage.START_SHUFFLE2.toString())) {
                     ArrayList<Integer> shuffle2Groups = (ArrayList<Integer>) is.readObject();
+                    os.writeUTF(ProtocolMessage.SHUFFLE2_RECEIVED.toString());
+                    os.flush();
                     Slave.shuffle2(shuffle2Groups);
-                } else if (line.equals("START_REDUCE2")) {
+
+                } else if (line.equals(ProtocolMessage.START_REDUCE2.toString())) {
+                    os.writeUTF(ProtocolMessage.REDUCE2_RECEIVED.toString());
+                    os.flush();
                     Slave.reduce2();
-                } else if (line.equals("QUIT")) {
+
+                } else if (line.equals(ProtocolMessage.QUIT.toString())) {
                     os.writeUTF("OK");
+                    os.flush();
+                    Slave.reset();
                     break;
                 }
             } catch (Exception e) {
@@ -81,5 +99,4 @@ public class SocketThread extends Thread {
             }
         }
     }
-    
 }

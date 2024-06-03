@@ -42,17 +42,36 @@ public class SocketThread extends Thread {
                 line = line.trim();
                 System.out.println("[SocketThread] Received: " + line);
     
-                if (line.equals("MAP_DONE")) {
+                if (line.equals(ProtocolMessage.MAP_RECEIVED.toString())) {
+                    Master.updateMapMessageAcquittal(slaveID, true);
+
+                } else if (line.equals(ProtocolMessage.MAP_DONE.toString())) {
                     Master.updateMapStatus(slaveID, true);
-                } else if (line.equals("SHUFFLE1_DONE")) {
+                
+                } else if (line.equals(ProtocolMessage.SHUFFLE1_RECEIVED.toString())) {
+                    Master.updateShuffle1MessageAcquittal(slaveID, true);
+
+                } else if (line.equals(ProtocolMessage.SHUFFLE1_DONE.toString())) {
                     Master.updateShuffle1Status(slaveID, true);
-                } else if (line.equals("REDUCE1_DONE")) {
+
+                } else if (line.equals(ProtocolMessage.REDUCE1_RECEIVED.toString())) {
+                    Master.updateReduce1MessageAcquittal(slaveID, true);
+
+                } else if (line.equals(ProtocolMessage.REDUCE1_DONE.toString())) {
                     Integer reduce1Min = is.readInt();
                     Integer reduce1Max = is.readInt();
                     Master.updateReduce1Status(slaveID, true, reduce1Min, reduce1Max);
-                } else if (line.equals("SHUFFLE2_DONE")) {
+
+                } else if (line.equals(ProtocolMessage.SHUFFLE2_RECEIVED.toString())) {
+                    Master.updateShuffle2MessageAcquittal(slaveID, true);
+
+                } else if (line.equals(ProtocolMessage.SHUFFLE2_DONE.toString())) {
                     Master.updateShuffle2Status(slaveID, true);
-                } else if (line.equals("REDUCE2_DONE")) {
+
+                } else if (line.equals(ProtocolMessage.REDUCE2_RECEIVED.toString())) {
+                    Master.updateReduce2MessageAcquittal(slaveID, true);
+
+                } else if (line.equals(ProtocolMessage.REDUCE2_DONE.toString())) {
                     Master.updateReduce2Status(slaveID, true);
                 }
             } catch (Exception e) {
@@ -68,5 +87,13 @@ public class SocketThread extends Thread {
             e.printStackTrace();
         }
     }
-    
+
+    public void reset() {
+        try {
+            os.close();
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

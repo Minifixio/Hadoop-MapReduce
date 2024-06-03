@@ -158,18 +158,6 @@ public class CommunicationHandler {
 
     }
 
-    private void listFilesFTP() {
-        System.out.println("[FTP] Listing remote files");
-        try {
-            FTPFile[] files = FTPClient.listFiles();
-            for (FTPFile file : files) {
-                System.out.println(file.getName());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void sendProtocolMessage(ProtocolMessage message) {
         System.out.println("[Socket] Sending to slaveID " + slaveID + ": " + message.toString());
         try {
@@ -189,4 +177,15 @@ public class CommunicationHandler {
         }
     }
 
+    public void reset() {
+        try {
+            osSocket.close();
+            isSocket.close();
+            socket.close();
+            socketThread.terminate();
+            disconnectFTP();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
