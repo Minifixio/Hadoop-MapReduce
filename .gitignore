@@ -1,6 +1,8 @@
-master/data
+master/data/CC-MAIN-20220116093137-20220116123137-00001.warc.wet
+master/data/CC-MAIN-20220116093137-20220116123137-00001.warc.wet.gz
 master/result.txt
 master/splits
-sequential/data
+sequential/data/CC-MAIN-20220116093137-20220116123137-00001.warc.wet
+sequential/data/CC-MAIN-20220116093137-20220116123137-00001.warc.wet.gz
 report/report_draft.md
 .vscode

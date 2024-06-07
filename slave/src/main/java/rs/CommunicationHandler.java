@@ -60,7 +60,7 @@ public class CommunicationHandler {
         initFTP();
         initSocket();
     }
-
+ 
     private void initFTP() {
         PropertyConfigurator.configure(Slave.class.getResource("/log4J.properties"));
         FtpServerFactory serverFactory = new FtpServerFactory();

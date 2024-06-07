@@ -95,7 +95,7 @@ public class SocketThread extends Thread {
                     break;
                 }
             } catch (Exception e) {
-                // TODO: handle exception
+                e.printStackTrace();
             }
         }
     }

@@ -75,7 +75,7 @@ public class SocketThread extends Thread {
                     Master.updateReduce2Status(slaveID, true);
                 }
             } catch (Exception e) {
-                // TODO: handle exception
+                e.printStackTrace();
             }
         }
     }

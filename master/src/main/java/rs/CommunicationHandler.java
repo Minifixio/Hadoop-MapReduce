@@ -133,7 +133,6 @@ public class CommunicationHandler {
 
     public InputStream getFileFTP(String fileName) {
         try {
-            // TODO : Handle when file does not exist
             InputStream inputStream = FTPClient.retrieveFileStream(fileName);
             return inputStream;
         } catch (Exception e) {

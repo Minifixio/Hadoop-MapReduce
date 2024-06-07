@@ -14,12 +14,20 @@ import java.util.Arrays;
 
 public class Master {
 
+    /**
+     * Constants
+     */
     private static final String SPLIT_FOLDER_NAME = "splits";
     private static final String RESULT_FILE_NAME = "result.txt";
 
+    
+    /**
+     * Timings of the MapReduce process
+     */
     private static long executionTime;
-
+    
     private static long splitTime;
+
     private static ArrayList<Long> mapTimes = new ArrayList<Long>();
     private static ArrayList<Long> shuffle1Times = new ArrayList<Long>();
     private static ArrayList<Long> reduce1Times = new ArrayList<Long>();
@@ -37,14 +45,30 @@ public class Master {
     private static long synchronizationTime;
     private static long computationTime;
 
+
+    /**
+     * Slaves variables
+     */
     private static int slavesCount;
     private static ArrayList<String> slavesHostnames = new ArrayList<String>();
 
+
+    /**
+     * State of the MapReduce process
+     */
     private static MapReduceState state = MapReduceState.STARTING;
     private static volatile boolean isFinished = false;
 
+
+    /**
+     * Communication handlers for each slave
+     */
     private static ArrayList<CommunicationHandler> communicationHandlers;
 
+
+    /**
+     * Status of the slaves for each phase
+     */
     private static ArrayList<Boolean> slavesMapStatus = new ArrayList<Boolean>();
 
     private static ArrayList<Boolean> slavesShuffle1Status = new ArrayList<Boolean>();
