@@ -11,13 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
-
-/**
- * TODO : 
- * - Try different file sizes
- */
 
 public class Master {
 
@@ -25,12 +18,15 @@ public class Master {
     private static final String RESULT_FILE_NAME = "result.txt";
 
     private static long executionTime;
+
+    private static long splitTime;
     private static ArrayList<Long> mapTimes = new ArrayList<Long>();
     private static ArrayList<Long> shuffle1Times = new ArrayList<Long>();
     private static ArrayList<Long> reduce1Times = new ArrayList<Long>();
     private static ArrayList<Long> shuffle2Times = new ArrayList<Long>();
     private static ArrayList<Long> reduce2Times = new ArrayList<Long>();
 
+    private static ArrayList<Long> initMessagesTimes = new ArrayList<Long>();
     private static ArrayList<Long> mapMessagesTimes = new ArrayList<Long>();
     private static ArrayList<Long> shuffle1MessagesTimes = new ArrayList<Long>();
     private static ArrayList<Long> reduce1MessagesTimes = new ArrayList<Long>();
@@ -59,8 +55,6 @@ public class Master {
     private static ArrayList<Integer> shuffle2Groups = new ArrayList<Integer>();
     private static ArrayList<Boolean> slavesShuffle2Status = new ArrayList<Boolean>();
     private static ArrayList<Boolean> slavesReduce2Status = new ArrayList<Boolean>();
-
-    private static HashMap<String, Integer> output = new HashMap<String, Integer>();
 
     public static void main(String[] args) {
 
@@ -95,20 +89,27 @@ public class Master {
      * @param numberOfSlaves
      */
     private static void initCommunications(int numberOfSlaves) {
-        int slaveID = 0;
+        
         communicationHandlers = new ArrayList<CommunicationHandler>();
+
+        int slaveID = 0;
+
         for (String slaveHostname : slavesHostnames) {
+            initMessagesTimes.add(System.currentTimeMillis());
+
             communicationHandlers.add(new CommunicationHandler(slaveHostname, slaveID, numberOfSlaves));
             slavesMapStatus.add(false);
             slavesShuffle1Status.add(false);
             slavesReduce1Status.add(false);
             slavesShuffle2Status.add(false);
             slavesReduce2Status.add(false);
+
             mapTimes.add(0L);
             shuffle1Times.add(0L);
             reduce1Times.add(0L);
             shuffle2Times.add(0L);
             reduce2Times.add(0L);
+
             mapMessagesTimes.add(0L);
             shuffle1MessagesTimes.add(0L);
             reduce1MessagesTimes.add(0L);
@@ -149,6 +150,12 @@ public class Master {
      */
     public static void splitAndSendChunks(String sourceFilePath, int numberOfSlaves) {
         System.out.println("[Split&Send] Splitting file into " + numberOfSlaves + " parts...");
+
+        for (int i = 0; i < numberOfSlaves; i++) {
+            initMessagesTimes.set(i, System.currentTimeMillis() - initMessagesTimes.get(i));
+        }
+
+        splitTime = System.currentTimeMillis();
 
         // Create a folder named SPLIT_FOLDER_NAME at workind_dir/SPLIT_FOLDER_NAME if it doesn't exist
         String userDir = System.getProperty("user.dir");
@@ -222,19 +229,24 @@ public class Master {
                         bos.write(buffer);
                     }
                 }
-
-                // Send the split file to the slave
-                System.out.println("[Master] Sending order to start map phase to all slaves...");
-                
-                state = MapReduceState.MAP;
-                mapMessagesTimes.set(i, System.currentTimeMillis());
-
-                final int index = i;
-                communicationHandlers.get(index).sendFileFTP(splitFilePath, "split_" + index + ".txt");
-                communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_MAP);
             }
         } catch (IOException e) {
             System.err.println("[Split&Send] Erreur lors de la lecture ou de l'écriture de fichier : " + e.getMessage());
+        }
+
+        splitTime = System.currentTimeMillis() - splitTime;
+        state = MapReduceState.MAP;
+
+        for (int i = 0; i < numberOfSlaves; i++) {
+            // Send the split file to the slave
+            System.out.println("[Master] Sending order to start map phase to all slaves...");
+            String splitFilePath = splitsFolder.getAbsolutePath() + "/split_" + i + ".txt";
+
+            mapMessagesTimes.set(i, System.currentTimeMillis());
+
+            final int index = i;
+            communicationHandlers.get(index).sendFileFTP(splitFilePath, "split_" + index + ".txt");
+            communicationHandlers.get(index).sendProtocolMessage(ProtocolMessage.START_MAP);
         }
     }
 
@@ -534,9 +546,13 @@ public class Master {
 
         // Print the timings
         System.out.println("[Master] Timings : ");
+
+        int initTime = initMessagesTimes.stream().mapToInt(Long::intValue).sum();
+        System.out.println("[Master] Init time : " + initTime + " ms");
+
+        System.out.println("[Master] Split time : " + splitTime + " ms");
         
-        int mapMessagesTime = mapMessagesTimes.stream().mapToInt(Long::intValue).sum();
-        int mapTime = mapMessagesTime - mapTimes.stream().mapToInt(Long::intValue).sum();
+        int mapTime = mapTimes.stream().mapToInt(Long::intValue).sum();
         System.out.println("[Master] Map time : " + mapTime + " ms");
 
         int shuffle1Time = shuffle1Times.stream().mapToInt(Long::intValue).sum();
@@ -558,8 +574,8 @@ public class Master {
         System.out.println("[Master] Reduce2 time : " + reduce2Time + " ms");
 
         communicationTime += shuffle1Time + shuffle2Time;
-        synchronizationTime += groupsMessagesTime;
-        computationTime += mapTime + reduce1Time + reduce2Time + buildResultTime;
+        synchronizationTime += initTime + groupsMessagesTime;
+        computationTime += splitTime + mapTime + reduce1Time + reduce2Time + buildResultTime;
 
         double ratio = ((double) communicationTime + (double) synchronizationTime) / (double) computationTime;
         System.out.println("[Master] Communication time : " + communicationTime + " ms");
@@ -580,7 +596,6 @@ public class Master {
         shuffle2Groups = new ArrayList<Integer>();
         slavesShuffle2Status = new ArrayList<Boolean>();
         slavesReduce2Status = new ArrayList<Boolean>();
-        output = new HashMap<String, Integer>();
 
         for (CommunicationHandler communicationHandler : communicationHandlers) {
             communicationHandler.reset();

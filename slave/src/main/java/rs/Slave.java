@@ -21,6 +21,7 @@ public class Slave {
     private static HashMap<String, Integer> reduce2Result = new HashMap<String, Integer>();
 
     public static void main(String[] args) {
+        System.out.println("\n\n[Slave] Starting");
         communicationManager = new CommunicationHandler();
         init(); 
     }

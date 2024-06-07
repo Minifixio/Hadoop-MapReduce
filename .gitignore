@@ -1,2 +1,6 @@
 master/data
+master/result.txt
+master/splits
 sequential/data
+report/report_draft.md
+.vscode

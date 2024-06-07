@@ -1,46 +1,63 @@
 # SLR207
 
-## Commands
-Machines usable : https://tp.telecom-paris.fr/
-Machines used : tp-1a201-17 - tp-1a201-18 - tp-1a201-21
+## Setup
 
-mvn clean compile assembly:single
-java -jar ./target/master-1-jar-with-dependencies.jar
-java -jar ./target/slave-1-jar-with-dependencies.jar
+To set up and run the Hadoop MapReduce system, follow these instructions:
 
-ssh elegallic-22@tp-1a201-00.enst.fr 
+### 1. Sequential Counter
+The sequential counter is located in the `sequential` folder.
 
-scp ./target/slave-1-jar-with-dependencies.jar elegallic-22@tp-1a201-17.enst.fr:/tmp/elegallic-22
+**Usage:** 
+```sh
+java -jar ./target/sequential-1-jar-with-dependencies.jar <input file>
+```
 
+### 2. Slave Node
+The slave JAR file is located at `slave/target/slave-1-jar-with-dependencies.jar`.
+
+### 3. Master Node
+The master JAR file is located at `master/target/master-1-jar-with-dependencies.jar`.
+
+- The `master/machines.txt` file lists the hostnames of the slave nodes.
+- The `master/data` folder stores some data samples used in tests.
+
+### 4. Deployment and Execution
+To deploy the slave JAR on the remote hosts, run:
+```sh
+sh deploy.sh
+```
+
+To start the MapReduce procedure, use the following command:
+```sh
+java -jar ./target/master-1-jar-with-dependencies.jar <hosts file> <input file>
+```
+where `<hosts file>` is the file listing the hostnames of the slaves, one per line.
+
+**Example (run from the /master directory):**
+```sh
+java -jar ./target/master-1-jar-with-dependencies.jar machines.txt data/CC-MAIN-20220116093137-20220116123137-00001.warc.wet
+```
+
+## Various tips
+- Find available machines : https://tp.telecom-paris.fr/
+
+- Build a jar : `mvn clean compile assembly:`
+
+- Trasnfer a jar for testing purpose : `scp ./target/slave-1-jar-with-dependencies.jar <login>@tp-1a201-17.enst.fr:/tmp/<login>`
+
+- Find and kill running processes on Socket and FTP ports :
+```sh
 lsof -i :3456
 lsof -i :9999
 
 kill -9 <PID_du_port_3456>
 kill -9 <PID_du_port_9999>
+```
 
-mvn clean compile assembly:single && java -jar ./target/slave-1-jar-with-dependencies.jar
-mvn clean compile assembly:single && java -jar ./target/master-1-jar-with-dependencies.jar machines.txt lorem.txt
-
-## Deploy
+- Deploy manually :
+```sh
 scp ./target/slave-1-jar-with-dependencies.jar elegallic-22@tp-XXXX-XX.enst.fr:/tmp/elegallic-22
 ssh elegallic-22@tp-XXXX-XX.enst.fr
 cd /tmp/elegallic-22/
 java -jar slave-1-jar-with-dependencies.jar
-
-
-# Workflow
-Master send files via FTP -> Server receives the file
-Master send map() signal -> Server starts the map() function
-Server finishes the map() and send back to Master -> Master starts reduce()
-
-FTP : 
-- Sending split from masters to slaves
-- Sending map results from slaves to slaves
-- Sending second reduce phase (sorting) from slave to master
-
-Socket : 
-- Send number of nodes in the process to all slaves
-- Send start map process
-- Send start shuffle process
-- Receive first reduce part (counting) from slaves
-- Send group ids to slaves
+```

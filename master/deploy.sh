@@ -4,9 +4,7 @@ localFolder="../"
 todeploy="slave/target/"
 remoteFolder="/dev/shm/$login/"
 nameOfTheJarToExecute="slave-1-jar-with-dependencies.jar"
-#create a machines.txt file with the list of computers
 computers=($(cat machines.txt))
-# computers=("tp-1a207-34" "tp-1a207-35" "tp-1a207-37")
 
 for c in ${computers[@]}; do
   #this command is used to kill all the user processes (in case the program is already running)
@@ -15,7 +13,7 @@ for c in ${computers[@]}; do
   #this command copies the folder to the remote folder
   command1=("scp" "$localFolder$todeploy$nameOfTheJarToExecute" "$login@$c:$remoteFolder")
   #this command goes to the remote folder, waits 3 seconds and executes the jar
-  command2=("ssh" "-tt" "$login@$c" "cd $remoteFolder;")
+  command2=("ssh" "-tt" "$login@$c" "cd $remoteFolder; java -jar $nameOfTheJarToExecute")
   echo ${command0[*]}
   "${command0[@]}"
   echo ${command1[*]}

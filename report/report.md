@@ -166,3 +166,17 @@ The `SocketThread` class handles the socket communication in a separate thread.
 3. **Gathering Shuffle Files from Other Slaves**:
    - **FTP Protocol**: Used for transferring shuffle files between slaves.
    - **Shuffle Phase**: Each slave sends its shuffle files to the appropriate slave nodes using FTP. For example, `shuffle1` files are distributed based on a hash function to ensure balanced load distribution.
+
+
+## Analysis of Results
+
+As the number of nodes increases, the speedup of the MapReduce algorithm also increases, demonstrating the benefits of parallel processing. However, the speedup is not linear due to overheads such as communication, coordination, and data distribution.
+
+**Amdahl's Law** states that the maximum speedup \( S(n) \) of a task using \( n \) parallel processors is given by:
+\[ S(n) = \frac{1}{(1 - P) + \frac{P}{n}} \]
+where \( P \) is the proportion of the task that can be parallelized, and \( 1 - P \) is the proportion that remains sequential.
+
+Amdahl's Law highlights a fundamental limitation in parallel computing: as the number of processors increases, the impact of the sequential portion of the task becomes more significant, limiting the overall speedup. This means that even if a task is largely parallelizable, the non-parallelizable portion will ultimately constrain the speedup. For example, if 95% of a task can be parallelized (\( P = 0.95 \)), the theoretical maximum speedup with infinite processors is only 20x.
+
+In practical terms, our MapReduce implementation exhibits this behavior. While adding more nodes initially results in substantial speedup, the benefits diminish as the overheads related to data distribution, communication, and coordination grow. These overheads effectively act as the sequential portion in Amdahl's Law, capping the achievable speedup regardless of the number of nodes added. Thus, optimizing both the parallel and sequential components is crucial for maximizing performance.
+

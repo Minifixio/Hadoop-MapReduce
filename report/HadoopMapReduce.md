@@ -1,3 +1,0 @@
-# Hadoop MapReduce
-
-SendComputerList
