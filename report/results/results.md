@@ -1,7 +1,7 @@
 # Experimental Values
 
 ## Sequential: 
-- Execution time : 19208 ms
+- Execution time : 190208 ms
 
 ## Map Reduce
 ### 30 nodes
