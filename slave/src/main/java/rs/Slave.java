@@ -143,6 +143,7 @@ public class Slave {
             System.out.println("[Slave] Shuffle1: created shuffle1 files");
 
             for (int i = 0; i < slaveCount; i++) {
+                
                 String shuffleFilePath = communicationManager.getFTPDirectory() + "/shuffle1/shuffle1_" + i + ".txt";
                 String sentFileName = "shuffle1_result_slave" + i + "_sender" + slaveID + ".txt";
 

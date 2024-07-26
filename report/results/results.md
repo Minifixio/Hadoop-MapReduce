@@ -1,11 +1,12 @@
 # Experimental Values
 
 ## Sequential: 
-- Execution time : 190208 ms
+- Execution time : 19208 ms
 
 ## Map Reduce
 ### 30 nodes
-- Execution time : 37093 ms- Init time : 61925 ms
+- Execution time : 37093 ms
+- Init time : 61925 ms
 - Split time : 4686 ms
 - Map time : 25381 ms
 - Shuffle1 time : 374940 ms
@@ -19,7 +20,8 @@
 - Computation time : 45066 ms
 
 ### 25 nodes
-- Execution time : 40183 ms- Init time : 17908 ms
+- Execution time : 40183 ms
+- Init time : 17908 ms
 - Split time : 4795 ms
 - Map time : 22622 ms
 - Shuffle1 time : 358377 ms
@@ -33,7 +35,8 @@
 - Computation time : 40255 ms
 
 ### 20 nodes
-- Execution time : 45138 ms- Init time : 11434 ms
+- Execution time : 45138 ms
+- Init time : 11434 ms
 - Split time : 4628 ms
 - Map time : 22389 ms
 - Shuffle1 time : 347218 ms
